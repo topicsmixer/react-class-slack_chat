@@ -13,6 +13,8 @@ import {
   Icon,
 } from "semantic-ui-react";
 
+import md5 from "md5";
+
 export default class Register extends Component {
   state = {
     username: "",
@@ -21,6 +23,7 @@ export default class Register extends Component {
     passwordConfirmation: "",
     errors: [],
     loading: false,
+    userRef : firebase.database().ref("users")
   };
 
   handleChange = (event) => {
@@ -65,7 +68,7 @@ export default class Register extends Component {
       // console.log("password unmatch")
       return false;
     } else {
-      console.log("ok pass");
+      // console.log("ok pass");
       return true;
     }
   };
@@ -82,7 +85,25 @@ export default class Register extends Component {
         .createUserWithEmailAndPassword(this.state.email, this.state.password)
         .then((createdUser) => {
           console.log(createdUser);
-          this.setState({ loading: false });
+          createdUser.user.updateProfile({
+            displayName:this.state.username,
+            photoURL:`http://gravatar.com/avatar/${md5(createdUser.user.email)}?d=identicon`
+          }).then(()=>{
+
+            this.setState({ loading: false });
+
+            this.saveUser(createdUser).then(()=>{
+              console.log("user Saved");
+              
+            })
+
+          }).catch(err=>{
+            console.log(err)
+            this.setState({
+              errors:this.state.errors.concat(err),
+              loading:false                                               
+            })
+          })
         })
         .catch((err) => {
           console.log(err);
@@ -93,6 +114,13 @@ export default class Register extends Component {
         });
     }
   };
+
+  saveUser = createUser=>{
+     return this.state.userRef.child(createUser.user.uid).set({
+       name:createUser.user.displayName,
+       avatar:createUser.user.photoURL,
+     });
+  }
 
   handleInputError = (errors, inputName) => {
     return errors.some((error) =>
@@ -109,8 +137,9 @@ export default class Register extends Component {
     return (
       <Grid textAlign="center" verticalAlign="middle" className="app">
         <Grid.Column style={{ maxWidth: 450 }}>
-          <Header as="h2" icon color="orange" textAlign="center">
+          <Header as="h1" icon color="orange" textAlign="center">
             <Icon name="puzzle piece" color="orange" />
+            Register Form For Chat Application
           </Header>
 
           <Form onSubmit={this.handleSubmit} size="large">
