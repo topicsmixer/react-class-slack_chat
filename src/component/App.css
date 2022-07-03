@@ -9,11 +9,19 @@ body,
 
 /* Messages.js */
 .messages{
-    height : 440px;
+    /* height : 440px; */
+    height : 62vh;
     overflow-y: scroll;
     
 }
+.message__progress {
+    height: 58vh;
+    overflow-y: scroll;
+}
 
+.ui.comments{
+    max-width: 850px !important;
+}
 
 /* MessageForm.js */
 .message__form{
@@ -30,3 +38,12 @@ body,
     border-left: 2px solid orange;
     padding-left: 8px;
 }
+
+.message__image{
+    padding: 1em;
+}
+
+ /* Progress Bar */
+ .progress__bar{
+    margin: 0.5rem 0 0 0 !important;
+ }

@@ -3,7 +3,7 @@ import firebase from 'firebase/compat/app'
 import { getAnalytics } from "firebase/analytics";
 // import "firebase/auth";
 import "firebase/compat/database";
-// import "firebase/storage"
+import "firebase/compat/storage"
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 
