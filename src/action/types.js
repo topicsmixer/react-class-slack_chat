@@ -9,3 +9,7 @@ export const SET_PRIVATE_CHANNEL ="SET_PRIVATE_CHANNEL";
 
 //Meta Panel User Posts 
 export const SET_USER_POSTS ="SET_USER_POSTS";
+
+
+// Color Action Types
+export const SET_COLORS = "SET_COLORS";
