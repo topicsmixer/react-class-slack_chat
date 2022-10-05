@@ -7,6 +7,7 @@ import Message from "./Message";
 import { connect } from "react-redux";
 import { setUserPosts } from "../../action";
 import Typing from "./Typing";
+import Skeleton from "./Skeleton";
 
 class Messages extends React.Component {
   state = {
@@ -37,6 +38,18 @@ class Messages extends React.Component {
       this.addListeners(channel.id);
       this.addUserStarsListner(channel.id, user.uid);
     }
+  }
+
+  //lifecycle method component did update
+  componentDidUpdate(prevProps, prevState) {
+    //when ever component update ho ga
+    if (this.messagesEnd) {
+      this.scrollToBottom();
+    }
+  }
+
+  scrollToBottom =()=>{
+      this.messagesEnd.scrollIntoView({behavior:"smooth"})
   }
 
   addListeners = (channelId) => {
@@ -248,10 +261,20 @@ class Messages extends React.Component {
       </div>
     ));
 
+    displayMessageSkeleton=loading=>(
+      loading ? (
+        <React.Fragment>
+          {[...Array(10)].map((_,i)=>(
+            <Skeleton key={i}/>
+          ))}
+        </React.Fragment>
+      ):null
+    )
+
   render() {
     // prettier-ignore
     const { messagesRef, messages, channel, user,progressBar,
-      numUniqueUsers,searchTerm,searchResults,searchLoading,privateChannel,isChannelStarred,typingUsers} = this.state;
+      numUniqueUsers,searchTerm,searchResults,searchLoading,privateChannel,isChannelStarred,typingUsers,messagesLoading} = this.state;
 
     return (
       <>
@@ -268,6 +291,7 @@ class Messages extends React.Component {
           <Comment.Group
             className={progressBar ? "message__progress" : "messages"}
           >
+            {this.displayMessageSkeleton(messagesLoading)}
             {/* Message */}
             {/* {this.displayMessages(messages)} */}
             {searchTerm
@@ -276,6 +300,7 @@ class Messages extends React.Component {
 
             {/* typing Effect   */}
             {this.displayTypingUsers(typingUsers)}
+            <div ref={(node) => (this.messagesEnd = node)}></div>
           </Comment.Group>
         </Segment>
 
