@@ -8,6 +8,7 @@ import { connect } from "react-redux";
 import { setUserPosts } from "../../action";
 import Typing from "./Typing";
 import Skeleton from "./Skeleton";
+// import { listeners } from "process";
 
 class Messages extends React.Component {
   state = {
@@ -29,22 +30,52 @@ class Messages extends React.Component {
     typingUsers: [],
     //connectedRef to check whether the user is online or not
     connectedRef: firebase.database().ref(".info/connected"),
+    listeners:[],
   };
 
   componentDidMount() {
-    const { channel, user } = this.state;
+    const { channel, user,listeners} = this.state;
 
     if (channel && user) {
+      this.removeListeners(listeners)
       this.addListeners(channel.id);
       this.addUserStarsListner(channel.id, user.uid);
     }
   }
+
+  componentWillUnmount(){
+    this.removeListeners(this.state.listeners);
+    this.state.connectedRef.off(); 
+  }
+
+  removeListeners=listeners=>{
+    listeners.forEach(listener=>{
+      listener.ref.child(listener.id).off(listener.event); 
+    })
+  }
+
 
   //lifecycle method component did update
   componentDidUpdate(prevProps, prevState) {
     //when ever component update ho ga
     if (this.messagesEnd) {
       this.scrollToBottom();
+    }
+  }
+
+  //Get all the information about the listeners
+  //each of the listener we setup
+  addToListeners=(id,ref,event)=>{
+    //add new element to the listener function
+    //the id ref event that the given listener using 
+    const index = this.state.listeners.findIndex(listener=>{
+      return listener.id === id && listener.ref === ref && listener.event === event;
+    }) 
+
+    //if we can't find the listener of an element with each of these values 
+    if(index  === -1) {
+      const newListener = {id,ref,event};
+      this.setState({listeners:this.state.listeners.concat(newListener)});
     }
   }
 
@@ -70,6 +101,10 @@ class Messages extends React.Component {
       }
     });
 
+    //child added addToListener
+    this.addToListeners(channelId,this.state.typingRef,'child_added');
+
+    
     //child Remove Event
     this.state.typingRef.child(channelId).on("child_removed", (snap) => {
       const index = typingUsers.findIndex((user) => user.id === snap.key);
@@ -78,6 +113,9 @@ class Messages extends React.Component {
         this.setState({ typingUsers });
       }
     });
+
+    //child remove addToListener
+    this.addToListeners(channelId,this.state.typingRef,'child_removed');
 
     //connected Ref
     this.state.connectedRef.on("value", (snap) => {
@@ -110,6 +148,8 @@ class Messages extends React.Component {
       this.countUniqueUsers(loadedMessages);
       this.countUserPosts(loadedMessages);
     });
+
+    this.addToListeners(channelId,ref,'child_added');
   };
 
   addUserStarsListner = (channelId, userId) => {
